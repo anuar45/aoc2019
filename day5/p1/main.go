@@ -17,11 +17,10 @@ func main() {
 		nums = append(nums, num)
 	}
 
-	fmt.Println(nums)
-
 	for i := 0; i < len(nums); {
 		opCode := intToSlice(nums[i])
 		fmt.Println(opCode)
+		//print(nums)
 		if nums[i] == 99 {
 			break
 		}
@@ -64,11 +63,11 @@ func main() {
 					nums[i+1] = 1
 				}
 				i += 2
-				break
+				continue
 			case 4:
 				fmt.Println(val1)
 				i += 2
-				break
+				continue
 			}
 
 			switch opCode[len(opCode)-4] {
@@ -114,4 +113,11 @@ func reverseInts(nums []int) {
 		j++
 		k--
 	}
+}
+
+func print(nums []int) {
+	for i, v := range nums {
+		fmt.Printf(" %d-%d ", i, v)
+	}
+	fmt.Println()
 }
