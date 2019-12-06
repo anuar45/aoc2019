@@ -19,16 +19,25 @@ func main() {
 	}
 
 	var count int
-	for k, val1 := range galaxy {
-		for i, val2 := range val1 {
-			for j, val3 := range galaxy {
-				if 
-			}
+	for _, v := range galaxy {
+		for _, o := range v {
+			count += CountDepth(galaxy, o)
 		}
-		
-		count++
 	}
 
-	fmt.Println(orbs)
+	fmt.Println(CountDepth(galaxy, "W4F"))
+	fmt.Println(count)
 
+}
+
+func CountDepth(galaxy map[string][]string, orb string) int {
+	var count int
+	for k, v := range galaxy {
+		for _, o := range v {
+			if o == orb {
+				count += CountDepth(galaxy, k)
+			}
+		}
+	}
+	return count
 }
