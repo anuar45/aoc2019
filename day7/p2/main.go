@@ -7,11 +7,7 @@ import (
 	"strings"
 )
 
-// type phaseSet struct {
-// 	seq    []int
-// 	result int
-// }
-
+// Amplifier struct to track state of amplifiers
 type Amplifier struct {
 	I     int
 	Phase int
