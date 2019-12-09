@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// Layer is a shortcut type here
 type Layer [6][25]int
 
 func main() {
