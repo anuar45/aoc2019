@@ -9,35 +9,40 @@ import (
 
 // Computer struct to track state of IntCode Computer
 type Computer struct {
-	I     int
-	Phase int
-	Code  []int
+	I    int
+	Code map[int]int
+	Base int
 }
 
 func main() {
 	input, _ := ioutil.ReadFile("../input.txt")
 	inputSlice := strings.Split(string(input), ",")
 
-	var nums []int
-	for _, v := range inputSlice {
+	nums := make(map[int]int)
+	for i, v := range inputSlice {
 		num, _ := strconv.Atoi(v)
-		nums = append(nums, num)
+		nums[i] = num
+		//nums = append(nums, num)
 	}
 
-	fmt.Println(nums)
+	cmp := Computer{0, nums, 0}
+
+	out := cmp.intCodeComp(1)
+
+	fmt.Println(out)
 }
 
-func (cmp *Computer) intCodeComp(signal int) int {
-	var output, i int
-	var wait bool
+func (cmp *Computer) intCodeComp(signal int) []int {
+	var output []int
+	var i int
 	nums := cmp.Code
-loop:
+
 	for i = cmp.I; i < len(nums); {
 		opCode := intToSlice(nums[i])
-		//fmt.Println(opCode)
-		//print(nums)
+		fmt.Println(opCode, cmp.Base, i)
+		fmt.Println(nums)
 		if nums[i] == 99 {
-			//fmt.Println("terminated")
+			fmt.Println("terminated")
 			break
 		}
 
@@ -58,6 +63,9 @@ loop:
 				case 1:
 					nums[nums[i+3]] = nums[nums[i+1]] + nums[i+2]
 					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[nums[i+1]] + nums[cmp.Base+nums[i+2]]
+					i += 4
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -66,6 +74,21 @@ loop:
 					i += 4
 				case 1:
 					nums[nums[i+3]] = nums[i+1] + nums[i+2]
+					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[i+1] + nums[cmp.Base+nums[i+2]]
+					i += 4
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] + nums[nums[i+2]]
+					i += 4
+				case 1:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] + nums[i+2]
+					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] + nums[cmp.Base+nums[i+2]]
 					i += 4
 				}
 			}
@@ -79,6 +102,9 @@ loop:
 				case 1:
 					nums[nums[i+3]] = nums[nums[i+1]] * nums[i+2]
 					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[nums[i+1]] * nums[cmp.Base+nums[i+2]]
+					i += 4
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -86,29 +112,47 @@ loop:
 					nums[nums[i+3]] = nums[i+1] * nums[nums[i+2]]
 					i += 4
 				case 1:
+					//fmt.Println(cmp.Base, cmp.I, i)
 					nums[nums[i+3]] = nums[i+1] * nums[i+2]
+					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[i+1] * nums[cmp.Base+nums[i+2]]
+					i += 4
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] * nums[nums[i+2]]
+					i += 4
+				case 1:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] * nums[i+2]
+					i += 4
+				case 2:
+					nums[nums[i+3]] = nums[cmp.Base+nums[i+1]] * nums[cmp.Base+nums[i+2]]
 					i += 4
 				}
 			}
 		case 3:
-			if i == 0 {
-				nums[nums[i+1]] = cmp.Phase
-			} else if !wait {
+			switch opCode[len(opCode)-3] {
+			case 0:
 				nums[nums[i+1]] = signal
-				wait = true
-			} else {
-				break loop
+			case 1:
+				nums[i+1] = signal
+			case 2:
+				nums[cmp.Base+nums[i+1]] = signal
 			}
 			i += 2
 		case 4:
 			switch opCode[len(opCode)-3] {
 			case 0:
-				output = nums[nums[i+1]]
-				i += 2
+				output = append(output, nums[nums[i+1]])
 			case 1:
-				output = nums[i+1]
-				i += 2
+				output = append(output, nums[i+1])
+			case 2:
+				output = append(output, nums[cmp.Base+nums[i+1]])
 			}
+			fmt.Println(output)
+			i += 2
 		case 5:
 			switch opCode[len(opCode)-3] {
 			case 0:
@@ -125,6 +169,12 @@ loop:
 					} else {
 						i += 3
 					}
+				case 2:
+					if nums[nums[i+1]] != 0 {
+						i = nums[cmp.Base+nums[i+2]]
+					} else {
+						i += 3
+					}
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -137,6 +187,33 @@ loop:
 				case 1:
 					if nums[i+1] != 0 {
 						i = nums[i+2]
+					} else {
+						i += 3
+					}
+				case 2:
+					if nums[i+1] != 0 {
+						i = nums[cmp.Base+nums[i+2]]
+					} else {
+						i += 3
+					}
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					if nums[cmp.Base+nums[i+1]] != 0 {
+						i = nums[nums[i+2]]
+					} else {
+						i += 3
+					}
+				case 1:
+					if nums[cmp.Base+nums[i+1]] != 0 {
+						i = nums[i+2]
+					} else {
+						i += 3
+					}
+				case 2:
+					if nums[cmp.Base+nums[i+1]] != 0 {
+						i = nums[cmp.Base+nums[i+2]]
 					} else {
 						i += 3
 					}
@@ -158,6 +235,12 @@ loop:
 					} else {
 						i += 3
 					}
+				case 2:
+					if nums[nums[i+1]] == 0 {
+						i = nums[cmp.Base+nums[i+2]]
+					} else {
+						i += 3
+					}
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -170,6 +253,33 @@ loop:
 				case 1:
 					if nums[i+1] == 0 {
 						i = nums[i+2]
+					} else {
+						i += 3
+					}
+				case 2:
+					if nums[i+1] == 0 {
+						i = nums[cmp.Base+nums[i+2]]
+					} else {
+						i += 3
+					}
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					if nums[cmp.Base+nums[i+1]] == 0 {
+						i = nums[nums[i+2]]
+					} else {
+						i += 3
+					}
+				case 1:
+					if nums[cmp.Base+nums[i+1]] == 0 {
+						i = nums[i+2]
+					} else {
+						i += 3
+					}
+				case 2:
+					if nums[cmp.Base+nums[i+1]] == 0 {
+						i = nums[cmp.Base+nums[i+2]]
 					} else {
 						i += 3
 					}
@@ -195,6 +305,14 @@ loop:
 						nums[nums[i+3]] = 0
 						i += 4
 					}
+				case 2:
+					if nums[nums[i+1]] < nums[cmp.Base+nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -208,6 +326,41 @@ loop:
 					}
 				case 1:
 					if nums[i+1] < nums[i+2] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				case 2:
+					if nums[i+1] < nums[cmp.Base+nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					if nums[cmp.Base+nums[i+1]] < nums[nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				case 1:
+					if nums[cmp.Base+nums[i+1]] < nums[i+2] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				case 2:
+					if nums[cmp.Base+nums[i+1]] < nums[cmp.Base+nums[i+2]] {
 						nums[nums[i+3]] = 1
 						i += 4
 					} else {
@@ -236,6 +389,14 @@ loop:
 						nums[nums[i+3]] = 0
 						i += 4
 					}
+				case 2:
+					if nums[nums[i+1]] == nums[cmp.Base+nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
 				}
 			case 1:
 				switch opCode[len(opCode)-4] {
@@ -255,8 +416,46 @@ loop:
 						nums[nums[i+3]] = 0
 						i += 4
 					}
+				case 2:
+					if nums[i+1] == nums[cmp.Base+nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				}
+			case 2:
+				switch opCode[len(opCode)-4] {
+				case 0:
+					if nums[cmp.Base+nums[i+1]] == nums[nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				case 1:
+					if nums[cmp.Base+nums[i+1]] == nums[i+2] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
+				case 2:
+					if nums[cmp.Base+nums[i+1]] == nums[cmp.Base+nums[i+2]] {
+						nums[nums[i+3]] = 1
+						i += 4
+					} else {
+						nums[nums[i+3]] = 0
+						i += 4
+					}
 				}
 			}
+		case 9:
+			cmp.Base += nums[i+1]
+			i += 2
 		}
 	}
 	cmp.I = i
@@ -285,9 +484,9 @@ func reverseInts(nums []int) {
 	}
 }
 
-func print(nums []int) {
-	for i, v := range nums {
-		fmt.Printf(" %d-%d ", i, v)
+func print(nums map[int]int) {
+	for i := 0; i < len(nums); i++ {
+		fmt.Printf(" %d-%d ", i, nums[i])
 	}
 	fmt.Println()
 }
