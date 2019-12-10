@@ -40,14 +40,14 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 	for i = cmp.I; i < len(nums); {
 		opCode := intToSlice(nums[i])
 		fmt.Println(opCode, cmp.Base, i)
-		fmt.Println(nums)
+		//fmt.Println(nums)
 		if nums[i] == 99 {
 			fmt.Println("terminated")
 			break
 		}
 
 		reverseInts(opCode)
-		for len(opCode) < 4 {
+		for len(opCode) < 5 {
 			opCode = append(opCode, 0)
 		}
 		reverseInts(opCode)
@@ -73,8 +73,14 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 					nums[nums[i+3]] = nums[i+1] + nums[nums[i+2]]
 					i += 4
 				case 1:
-					nums[nums[i+3]] = nums[i+1] + nums[i+2]
-					i += 4
+					switch opCode[len(opCode)-5] {
+					case 0:
+						nums[nums[i+3]] = nums[i+1] + nums[i+2]
+						i += 4
+					case 2:
+						nums[cmp.Base+nums[i+3]] = nums[i+1] + nums[i+2]
+						i += 4
+					}
 				case 2:
 					nums[nums[i+3]] = nums[i+1] + nums[cmp.Base+nums[i+2]]
 					i += 4
@@ -112,9 +118,15 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 					nums[nums[i+3]] = nums[i+1] * nums[nums[i+2]]
 					i += 4
 				case 1:
-					//fmt.Println(cmp.Base, cmp.I, i)
-					nums[nums[i+3]] = nums[i+1] * nums[i+2]
-					i += 4
+					switch opCode[len(opCode)-5] {
+					case 0:
+						//fmt.Println(cmp.Base, cmp.I, i)
+						nums[nums[i+3]] = nums[i+1] * nums[i+2]
+						i += 4
+					case 2:
+						nums[cmp.Base+nums[i+3]] = nums[i+1] * nums[i+2]
+						i += 4
+					}
 				case 2:
 					nums[nums[i+3]] = nums[i+1] * nums[cmp.Base+nums[i+2]]
 					i += 4
@@ -325,12 +337,23 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 						i += 4
 					}
 				case 1:
-					if nums[i+1] < nums[i+2] {
-						nums[nums[i+3]] = 1
-						i += 4
-					} else {
-						nums[nums[i+3]] = 0
-						i += 4
+					switch opCode[len(opCode)-5] {
+					case 0:
+						if nums[i+1] < nums[i+2] {
+							nums[nums[i+3]] = 1
+							i += 4
+						} else {
+							nums[nums[i+3]] = 0
+							i += 4
+						}
+					case 2:
+						if nums[i+1] < nums[i+2] {
+							nums[cmp.Base+nums[i+3]] = 1
+							i += 4
+						} else {
+							nums[cmp.Base+nums[i+3]] = 0
+							i += 4
+						}
 					}
 				case 2:
 					if nums[i+1] < nums[cmp.Base+nums[i+2]] {
@@ -409,12 +432,23 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 						i += 4
 					}
 				case 1:
-					if nums[i+1] == nums[i+2] {
-						nums[nums[i+3]] = 1
-						i += 4
-					} else {
-						nums[nums[i+3]] = 0
-						i += 4
+					switch opCode[len(opCode)-5] {
+					case 0:
+						if nums[i+1] == nums[i+2] {
+							nums[nums[i+3]] = 1
+							i += 4
+						} else {
+							nums[nums[i+3]] = 0
+							i += 4
+						}
+					case 2:
+						if nums[i+1] == nums[i+2] {
+							nums[cmp.Base+nums[i+3]] = 1
+							i += 4
+						} else {
+							nums[cmp.Base+nums[i+3]] = 0
+							i += 4
+						}
 					}
 				case 2:
 					if nums[i+1] == nums[cmp.Base+nums[i+2]] {
@@ -454,7 +488,14 @@ func (cmp *Computer) intCodeComp(signal int) []int {
 				}
 			}
 		case 9:
-			cmp.Base += nums[i+1]
+			switch opCode[len(opCode)-3] {
+			case 0:
+				cmp.Base += nums[nums[i+1]]
+			case 1:
+				cmp.Base += nums[i+1]
+			case 2:
+				cmp.Base += nums[cmp.Base+nums[i+1]]
+			}
 			i += 2
 		}
 	}
