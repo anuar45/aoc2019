@@ -40,27 +40,65 @@ func main() {
 		y++
 	}
 
-	pMap := Points{SizeX: x, SizeY: y, Points: points}
+	pMap := Points{SizeX: int(x), SizeY: int(y), Points: points}
 
-	fmt.Println(pMap)
-	print(pMap)
+	//fmt.Println(pMap)
+	//print(pMap)
 
-	// for y1 := 0; y1 < len(m); y1++ {
-	// 	for x1 := 0; x1 < len(m[y1]); x1++ {
-	// 		if m[y1][x1] == 1 {
-	// 			for y2 := 0; y2 < len(m); y2++ {
-	// 				for x2 := 0; x2 < len(m[y2]); x2++ {
-	// 					if m[y2][x2] == 1 && y2 != y1 && x2 != x1 {
+	for i := 0; i < len(pMap.Points); i++ {
+		if pMap.Points[i].Val == 1 {
+		loop:
+			for j := i; j < len(pMap.Points); j++ {
+				//fmt.Println(p1)
+				if pMap.Points[j].Val == 1 && (pMap.Points[i].X != pMap.Points[j].X || pMap.Points[i].Y != pMap.Points[j].Y) {
+					//fmt.Println(pMap.Points[i], pMap.Points[j])
+					//m1, m2 := findSlope(pMap.Points[i].X, pMap.Points[i].Y, pMap.Points[j].X, pMap.Points[j].Y)
+					//fmt.Println(m1)
+					m1 := pMap.Points[j].Y - pMap.Points[i].Y
+					m2 := pMap.Points[j].X - pMap.Points[i].X
+					kx1 := 0
+					if m2 != 0 {
+						kx1 = m1 * pMap.Points[j].X / m2
+					}
+					b1 := pMap.Points[i].Y - kx1
+					fmt.Printf("%d %d  %d %d  %d", pMap.Points[i].X, pMap.Points[i].Y, pMap.Points[j].X, pMap.Points[j].Y, b1)
+					for k := i; k < j; k++ {
+						if pMap.Points[k].Val == 1 {
+							kx2 := 0
+							if m2 != 0 && m1*pMap.Points[k].X%m2 == 0 {
+								kx2 = m1 * pMap.Points[k].X / m2
+							}
 
-	// 					}
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
+							b2 := pMap.Points[k].Y - kx2
+							fmt.Printf(" %d\n", b2)
+							if b1 == b2 {
+								continue loop
+							}
+						}
+					}
+					pMap.Points[i].See = append(pMap.Points[i].See, pMap.Points[j])
+					pMap.Points[j].See = append(pMap.Points[j].See, pMap.Points[i])
+				}
+			}
+		}
+	}
+
+	for _, v := range pMap.Points {
+		fmt.Println(v.X, v.Y, len(v.See))
+	}
+
+	var maxPoint Point
+	for _, v := range pMap.Points {
+		if len(maxPoint.See) < len(v.See) {
+			maxPoint = v
+		}
+	}
+
+	fmt.Println(maxPoint.X, maxPoint.Y, len(maxPoint.See))
 
 }
 
+// TODO: Needs rework
 func print(points Points) {
 	for i, point := range points.Points {
 		fmt.Print(point.Val)
@@ -68,12 +106,4 @@ func print(points Points) {
 			fmt.Println()
 		}
 	}
-}
-
-func findSlope(x1, y1, x2, y2 int) int {
-	var result int
-	yDiff := y2 - y1
-	xDiff := x2 - x1
-	result = yDiff / xDiff
-	return result
 }
