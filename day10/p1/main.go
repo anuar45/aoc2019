@@ -48,43 +48,53 @@ func main() {
 	for i := 0; i < len(pMap.Points); i++ {
 		if pMap.Points[i].Val == 1 {
 		loop:
-			for j := i; j < len(pMap.Points); j++ {
+			for j := i + 1; j < len(pMap.Points); j++ {
 				//fmt.Println(p1)
-				if pMap.Points[j].Val == 1 && (pMap.Points[i].X != pMap.Points[j].X || pMap.Points[i].Y != pMap.Points[j].Y) {
-					//fmt.Println(pMap.Points[i], pMap.Points[j])
-					//m1, m2 := findSlope(pMap.Points[i].X, pMap.Points[i].Y, pMap.Points[j].X, pMap.Points[j].Y)
-					//fmt.Println(m1)
-					m1 := pMap.Points[j].Y - pMap.Points[i].Y
-					m2 := pMap.Points[j].X - pMap.Points[i].X
-					kx1 := 0
-					if m2 != 0 {
-						kx1 = m1 * pMap.Points[j].X / m2
-					}
-					b1 := pMap.Points[i].Y - kx1
-					fmt.Printf("%d %d  %d %d  %d", pMap.Points[i].X, pMap.Points[i].Y, pMap.Points[j].X, pMap.Points[j].Y, b1)
-					for k := i; k < j; k++ {
-						if pMap.Points[k].Val == 1 {
-							kx2 := 0
-							if m2 != 0 && m1*pMap.Points[k].X%m2 == 0 {
-								kx2 = m1 * pMap.Points[k].X / m2
-							}
-
-							b2 := pMap.Points[k].Y - kx2
-							fmt.Printf(" %d\n", b2)
-							if b1 == b2 {
+				if pMap.Points[j].Val == 1 && !(pMap.Points[i].X == pMap.Points[j].X && pMap.Points[i].Y == pMap.Points[j].Y) {
+					switch {
+					case pMap.Points[i].X == pMap.Points[j].X:
+						for k := i + 1; k < j; k++ {
+							if pMap.Points[k].Val == 1 && pMap.Points[i].X == pMap.Points[k].X {
 								continue loop
 							}
 						}
+						pMap.Points[i].See = append(pMap.Points[i].See, pMap.Points[j])
+						pMap.Points[j].See = append(pMap.Points[j].See, pMap.Points[i])
+					case pMap.Points[i].Y == pMap.Points[j].Y:
+						for k := i + 1; k < j; k++ {
+							if pMap.Points[k].Val == 1 && pMap.Points[i].Y == pMap.Points[k].Y {
+								continue loop
+							}
+						}
+						pMap.Points[i].See = append(pMap.Points[i].See, pMap.Points[j])
+						pMap.Points[j].See = append(pMap.Points[j].See, pMap.Points[i])
+					default:
+						m1 := pMap.Points[j].Y - pMap.Points[i].Y
+						m2 := pMap.Points[j].X - pMap.Points[i].X
+						b1 := pMap.Points[i].Y - m1*pMap.Points[i].X/m2
+						//fmt.Printf("%d %d  %d %d  %d %d\n", pMap.Points[i].X, pMap.Points[i].Y, pMap.Points[j].X, pMap.Points[j].Y, m1, m2)
+						for k := i + 1; k < j; k++ {
+							if pMap.Points[k].Val == 1 {
+								fmt.Println(m1 * pMap.Points[k].X % m2)
+								b2 := pMap.Points[k].Y - m1*pMap.Points[k].X/m2
+								//fmt.Println(pMap.Points[k].X, pMap.Points[k].Y, b1, b2)
+								if b1 == b2 {
+									continue loop
+								}
+							}
+						}
+						pMap.Points[i].See = append(pMap.Points[i].See, pMap.Points[j])
+						pMap.Points[j].See = append(pMap.Points[j].See, pMap.Points[i])
 					}
-					pMap.Points[i].See = append(pMap.Points[i].See, pMap.Points[j])
-					pMap.Points[j].See = append(pMap.Points[j].See, pMap.Points[i])
 				}
 			}
 		}
 	}
 
 	for _, v := range pMap.Points {
-		fmt.Println(v.X, v.Y, len(v.See))
+		if v.Val == 1 {
+			fmt.Println(v.X, v.Y, len(v.See))
+		}
 	}
 
 	var maxPoint Point
