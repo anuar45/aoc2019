@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sort"
 )
 
 type Point struct {
@@ -42,7 +41,7 @@ func main() {
 		y++
 	}
 
-	pMap := Points{SizeX: int(x), SizeY: int(y), Points: points}
+	pMap := Points{SizeX: x, SizeY: y, Points: points}
 
 	//fmt.Println(pMap)
 	//print(pMap)
@@ -91,27 +90,48 @@ func main() {
 			}
 		}
 	}
+	// 22 19
+	fmt.Println(pMap.Points[554].X, pMap.Points[554].Y)
+	fmt.Println(pMap.SizeX, pMap.SizeY)
 
-	sort.Slice(pMap.Points, func(i, j int) bool {
-		return len(pMap.Points[i].See) < len(pMap.Points[j].See)
-	},
-	)
+	var clockPoints = pMap.Points[554].See
+	for i := 0; i < len(clockPoints); i++ {
 
-	for i, v := range pMap.Points {
-		if v.Val == 1 {
-			fmt.Println(i, v.X, v.Y, len(v.See))
-		}
 	}
 
-	var maxPoint Point
-	for _, v := range pMap.Points {
-		if len(maxPoint.See) < len(v.See) {
-			maxPoint = v
-		}
+	for i, v := range clockPoints {
+		fmt.Println(i, v.X, v.Y)
 	}
 
-	// last-1 is right answer
-	fmt.Println(maxPoint.X, maxPoint.Y, len(maxPoint.See))
+	// sort.Slice(pMap.Points[554].See, func(i, j int) bool {
+	// 	return (pMap.Points[554].See[i].X + pMap.Points[554].See[i].Y) < (pMap.Points[554].See[j].X + pMap.Points[554].See[j].Y)
+	// },
+	// )
+
+	// for i, v := range pMap.Points[554].See {
+	// 	fmt.Println(i, v.X, v.Y)
+	// }
+
+	// for i, v := range pMap.Points {
+	// 	if v.Val == 1 {
+	// 		fmt.Println(i, v.X, v.Y, len(v.See))
+	// 	}
+	// }
+
+	// sort.Slice(pMap.Points, func(i, j int) bool {
+	// 	return len(pMap.Points[i].See) < len(pMap.Points[j].See)
+	// },
+	// )
+
+	// //22 19 282
+	// var maxPoint Point
+	// for _, v := range pMap.Points {
+	// 	if len(maxPoint.See) < len(v.See) {
+	// 		maxPoint = v
+	// 	}
+	// }
+
+	// fmt.Println(maxPoint.X, maxPoint.Y, len(maxPoint.See))
 
 }
 
@@ -142,4 +162,34 @@ func compareFloats(f1, f2 float64) bool {
 		result = true
 	}
 	return result
+}
+
+func less(center, a, b Point) bool {
+	if a.X-center.X >= 0 && b.X-center.X < 0 {
+		return true
+	}
+	if a.X-center.X < 0 && b.X-center.X >= 0 {
+		return false
+	}
+	if a.X-center.X == 0 && b.X-center.X == 0 {
+		if a.Y-center.Y >= 0 || b.Y-center.Y >= 0 {
+			return a.Y > b.Y
+		}
+		return b.Y > a.Y
+	}
+
+	// compute the cross product of vectors (center -> a) x (center -> b)
+	det := (a.X-center.X)*(b.Y-center.Y) - (b.X-center.X)*(a.Y-center.Y)
+	if det < 0 {
+		return true
+	}
+	if det > 0 {
+		return false
+	}
+
+	// points a and b are on the same line from the center
+	// check which point is closer to the center
+	d1 := (a.X-center.X)*(a.X-center.X) + (a.Y-center.Y)*(a.Y-center.Y)
+	d2 := (b.X-center.X)*(b.X-center.X) + (b.Y-center.Y)*(b.Y-center.Y)
+	return d1 > d2
 }
